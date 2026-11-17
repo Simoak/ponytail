@@ -242,21 +242,22 @@ def tape_rewind(dur):
 def sfx():
     d, dry = z(), z()  # 'd' gets reverb tail
     place(d, clatter(), 43.95 - T, 0.5)                          # projector clatter across the loop seam
-    place(d, reel_start(), 3.85, 0.6); place(d, whoosh(0.5, 4000, 600, True), 3.55, 0.25, -0.2)
-    for tc in (8.0, 12.0, 20.0, 24.0, 28.0):                     # card whooshes peak ~0.1 s before the card
+    place(d, tape_rewind(0.8)[::-1], 4.0, 0.3, -0.1)                  # T2 rewinds to zero (flashback)
+    for tc in (12.0, 20.0, 24.0, 28.0):                     # card whooshes peak ~0.1 s before the card
         place(d, whoosh(0.45, 800, 5000), tc - 0.33, 0.18, -0.25)
-    for t in np.arange(9.375, 11.2 - 2 / 60, S16): place(d, tick(2200 + 900 * (t - 9.4) / 1.8), t, 0.28)   # 1/16 grid, muted near the ding
-    place(d, stroke(1.0), 10.4, 0.35, 0.2); place(d, ding(), 11.2, 0.55)
-    place(d, ding(1480, 0.6), 12.3, 0.35)
-    place(d, grains(0.7, False), 16.3, 0.25); place(d, reel_start(0.5), 16.95, 0.6); place(d, whoosh(0.6, 5000, 400, True), 16.4, 0.15, 0.2)
-    for t in np.arange(21.25, 22.8 - 2 / 60, S16): place(d, tick(2200 + 700 * (t - 21.2) / 1.6), t, 0.25)
-    place(d, denied(), 22.8, 0.45)
+    for t in np.arange(5.0, 7.8 - 2 / 60, S16): place(d, tick(2200 + 900 * (t - 5.0) / 2.8), t, 0.28)   # T1 rises; 1/16 grid, muted near the ding
+    place(d, ding(), 7.8, 0.55); place(d, stroke(1.0), 12.3, 0.35, 0.2)   # T1 locks; record line draws
+    place(d, ding(1480, 0.6), 13.3, 0.3)
+    place(d, whoosh(0.6, 5000, 400, True), 16.3, 0.15, 0.2)          # T2 slot appears
+    for t in np.arange(17.0, 19.6, S16): place(d, tick(2200 + 700 * (t - 17.0) / 2.6), t, 0.25)   # T2 rises on YouTube
+    place(d, denied(), 20.2, 0.45)                                     # short of Trailer 1
     place(d, whoosh(4.3, 400, 4000), 24.3, 0.35, 0.0); place(d, grains(3.6, True, 90), 24.4, 0.3)
-    place(d, stroke(1.2), 28.2, 0.35, -0.2); place(d, ding(2349, 0.7), 29.4, 0.3)   # 365M ring locks
+    place(d, grains(1.4, True, 70), 28.2, 0.3, 0.2); place(d, ding(2349, 0.7), 29.6, 0.3)   # Deadpool column rises and locks
     place(d, ding(4186, 0.25), 33.3, 0.12, -0.3)                                          # payoff text shine glint
     place(d, riser(3.75), 28.0, 0.45)
     place(d, impact(), 32.0, 1.0)
-    for tc in (36.1, 38.5): place(d, whoosh(0.4, 900, 4500), tc - 0.3, 0.12, -0.25)
+    for tc in (36.1, 39.45): place(d, whoosh(0.4, 900, 4500), tc - 0.3, 0.12, -0.25)
+    place(d, grains(2.0, True, 70), 36.3, 0.3, 0.3); place(d, ding(2637, 0.8), 38.3, 0.35)   # Spider-Man column rises and locks
     place(d, tape_rewind(1.4), 42.5, 0.35)
     # circular FFT reverb, energy-normalised IR
     n = int(1.4 * SR); t = np.arange(n) / SR
