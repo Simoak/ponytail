@@ -255,7 +255,6 @@ def sfx():
     place(d, stroke(1.2), 28.2, 0.35, -0.2); place(d, ding(2349, 0.7), 29.4, 0.3)   # 365M ring locks
     place(d, ding(4186, 0.25), 33.3, 0.12, -0.3)                                          # payoff text shine glint
     place(d, riser(3.75), 28.0, 0.45)
-    place(dry, bp(noise(int(0.125 * SR)), 2000, 9000) * 0.03, 31.875)  # tape-hiss breath in the gap
     place(d, impact(), 32.0, 1.0)
     for tc in (36.1, 38.5): place(d, whoosh(0.4, 900, 4500), tc - 0.3, 0.12, -0.25)
     place(d, tape_rewind(1.4), 42.5, 0.35)
@@ -301,7 +300,7 @@ def limit(x, ceil_db):
     return y
 def tp_db(x): return 20 * np.log10(np.abs(signal.resample_poly(x, 4, 1, axis=0)).max() + 1e-12)
 
-SECTIONS = [(0, 4, -18), (4, 16, -16), (16, 20, -18), (20, 24, -16), (24, 28, -14.5), (28, 32, -16.5), (32, 38, -11), (38, 42, -20), (42, 44, -18)]
+SECTIONS = [(0, 4, -18.7), (4, 16, -17.1), (16, 20, -19), (20, 24, -17.1), (24, 28, -17.6), (28, 32, -19.4), (32, 38, -11.3), (38, 42, -21), (42, 44, -19.5)]  # pre-limiter targets; final normalise lifts ~+1 LU
 def section_gain(m):
     g = np.ones(N); ref = None
     for a, b, tgt in SECTIONS:
@@ -321,11 +320,11 @@ if __name__ == '__main__':
     # SFX bus 6-10 dB under music peaks: measure and set
     S *= 10 ** ((lufs(M) - 9 - lufs(S)) / 20)
     full = mono_lows(eq_phone(M + S))
-    g0, g1 = int(31.875 * SR), int(32.0 * SR); full[g0:g1] *= 0.0; full[g0:g1] += S_hiss[g0:g1]   # true silence before the impact
+    g0, g1 = int(31.875 * SR), int(32.0 * SR); full[g0:g1] *= 0.0   # true silence before the impact
     for _ in range(4):
         full *= 10 ** ((-14 - lufs(limit(full, -3.6))) / 20)
     full = limit(full, -3.6)
-    sfx_only = mono_lows(eq_phone(S)); sfx_only *= 10 ** ((-21 - lufs(sfx_only)) / 20); sfx_only = limit(sfx_only, -3.6)
+    sfx_only = mono_lows(eq_phone(S)); sfx_only *= 10 ** ((-21 - lufs(sfx_only)) / 20); sfx_only = limit(sfx_only, -3.6); sfx_only[g0:g1] = 0
     # shortcut: ungated meter reads sparse SFX ~3 dB low vs BS.1770 gating; -21 here = -18 LUFS on ebur128. Add gating if reused
     write(os.path.join(HERE, 'audio', 'full.wav'), full); write(os.path.join(HERE, 'audio', 'sfx.wav'), sfx_only)
     ph = np.stack([bp(full[:, c], 280, 9000, 4) for c in range(2)], 1)

@@ -194,8 +194,8 @@ def scene_points(t):
     front = np.exp(-((v - thrS) / 4.0) ** 2) * (v > 0.5) * (v < 474)
     base = 0.05 + 0.10 * hsh(np.arange(NS) + 3) + 0.10 * np.exp(-dS / 1.6)  # screen spill
     tw = np.zeros(NS); tw[TW] = 0.9 * np.maximum(0, np.cos(TAU * TWK * t / T + TWP)) ** 30
-    wave = np.sin(np.pi * ((t / 1.0) % 1)) ** 2 * np.exp(-((dS - 1.25 - 2.0 * ((t / 1.0) % 1)) / 0.12) ** 2) * (clamp(1 - seg(t, 3.0, 3.8)) + clamp(seg(t, 42.8, 43.6)))  # seat light wave each beat-pair in the hook
-    bS = base * (0.6 + 0.4 * son) + 2.0 * lit + 1.2 * front + tw + 0.5 * wave
+    wave = np.sin(np.pi * ((t / 1.0) % 1)) ** 2 * np.exp(-((dS - 1.25 - 2.0 * ((t / 1.0) % 1)) / 0.12) ** 2) * (clamp(1 - seg(t, 8.2, 9.0)) + clamp(seg(t, 42.8, 43.6)))  # seat light wave each beat-pair in the hook
+    bS = base * (0.6 + 0.4 * son) + 2.0 * lit + 1.2 * front + tw + 1.6 * wave
     # city
     litc = np.clip((v - thrC) / 6.0 + 0.5, 0, 1) if v > 120 else np.zeros(NC)
     frc = np.exp(-((v - thrC) / 10.0) ** 2) * (v > 120) * (v < 474)
@@ -375,10 +375,10 @@ def counter_items(t):
         return out
     cap = word_img('YouTube views · first 24 h', 'Inter-Medium.otf', 30, 0)[0]
     res = []
-    if 8.0 <= t < 16.6:
-        v = 90.4 * smooth(seg(t, 9.4, 11.2)) if t < 16.3 else 90.4 * (1 - smooth(seg(t, 16.3, 16.6)))
+    if 9.1 <= t < 16.0:
+        v = 90.4 * smooth(seg(t, 9.4, 11.2))
         its = digits(f'{v:.1f}M', TX, 1420, WHT) + [(cap, TX, 1532, SEC)]
-        wipe = E_IN(seg(t, 8.0, 8.5)); fade = 1 - E_OUT(seg(t, 16.3, 16.6))
+        wipe = E_IN(seg(t, 9.1, 9.6)); fade = 1 - E_OUT(seg(t, 15.45, 15.7))
         for a, x, y, c in its:
             al = clamp((wipe * 900 - (x - TX)) / 120) * fade  # soft left->right wipe
             pulse = 1 - 0.2 * np.sin(np.pi * clamp((t - 11.2) / 0.4)) ** 2
@@ -395,17 +395,17 @@ def text_items(t):
     if t >= 42.6: out += reveal(hk, t, 42.6, 0.08)
     for k, (tc, txt, src) in enumerate(CARDS):
         t_end = CARDS[k + 1][0] if k + 1 < len(CARDS) else 31.75
-        if tc - 0.1 <= t < t_end + 0.3:
+        if tc - 0.1 <= t < t_end:
             its, _ = block([(txt, 'Inter-Medium.otf', 52, -0.01, WHT), (src, 'Inter-Medium.otf', 30, 0, SEC)], TX, 1205)
             n = len(its); st = min(0.07, 0.20 / max(n - 1, 1))
-            out += reveal(its, t, tc + 0.1, st, t_end - 0.05 if k + 1 < len(CARDS) else 31.5, 0.3 if k + 1 < len(CARDS) else 0.25)
+            out += reveal(its, t, tc + 0.1, st, t_end - 0.3 if k + 1 < len(CARDS) else 31.5, 0.25)
     out += counter_items(t)
     if 32.3 <= t < 36.2:
-        its, _ = block(PAY, TX, BAND_Y - 40, gap=14); out += reveal(its, t, 32.1, 0.12, 35.8, 0.3)
-    if 36.1 <= t < 38.5:
-        its, _ = block(IDEA, TX, BAND_Y); out += reveal(its, t, 36.1, 0.16, 38.15, 0.3)
-    if 38.5 <= t < 42.45:
-        its, _ = block(END, TX, BAND_Y - 20, gap=12); out += reveal(its, t, 38.5, 0.16, 42.0, 0.4)
+        its, _ = block(PAY, TX, BAND_Y - 40, gap=14); out += reveal(its, t, 32.1, 0.06, 35.8, 0.3)
+    if 36.1 <= t < 39.45:
+        its, _ = block(IDEA, TX, BAND_Y); out += reveal(its, t, 36.1, 0.08, 39.15, 0.3)
+    if 39.45 <= t < 42.45:
+        its, _ = block(END, TX, BAND_Y - 20, gap=12); out += reveal(its, t, 39.45, 0.10, 42.0, 0.4)
     return out
 
 # glass panel (static geometry, precomputed)
@@ -419,7 +419,7 @@ PMX = (gx - (gx - ccx) * 0.20 * edgew).astype(np.float32); PMY = (gy - (gy - ccy
 RIM = np.exp(-((PDT - 1.5) / 1.2) ** 2).astype(np.float32)
 SHEEN = np.clip(1 - np.abs((gx / pw - gy / ph * 0.4) - 0.3) * 4, 0, 1).astype(np.float32) * 0.025
 def panel_bottom(t):
-    big = smooth(seg(t, 7.75, 8.3)) - smooth(seg(t, 16.3, 16.85)) + smooth(seg(t, 22.3, 22.8)) - smooth(seg(t, 24.0, 24.55))
+    big = smooth(seg(t, 8.6, 9.1)) - smooth(seg(t, 15.7, 16.2)) + smooth(seg(t, 22.3, 22.8)) - smooth(seg(t, 24.0, 24.55))
     return int(round(1395 + (1600 - 1395) * clamp(big)))
 _pm = {}
 def pmask(ph):
