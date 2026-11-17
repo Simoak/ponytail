@@ -263,6 +263,7 @@ def chart_labels(t):
         elif i == 2: on = smooth(seg(t, 28.0, 28.5)) * (1 - smooth(seg(t, 42.5, 42.9))); vtxt = f'{h * 100:.0f}M' if h > 0 else None
         else: on = smooth(seg(t, 36.1, 36.6)) * (1 - smooth(seg(t, 42.5, 42.9))); vtxt = f'{h * 100:.1f}M' if h > 0 else None
         on = clamp(on)
+        if t >= 42.5 and i != 1: vtxt = f'{val:.1f}M' if val % 1 else f'{val:.0f}M'  # rewind: never show invented intermediate values
         if on <= 0.01: continue
         (tx,), (ty,), _ = project(np.array([[x0, h, CW / 2]]), pos, tgt, mm)
         items = []

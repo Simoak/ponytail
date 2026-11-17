@@ -63,3 +63,6 @@ G1: Dec 4 date, YouTube record wording, "then" + Feb 2024 on 365M, May 2025 on t
 
 ## QA round 1 → fixes
 Headers: old exits fully before the new reveal. Counter only 9.1–15.7 (no 0.0M under card 1, no drain under card 4). Payoff stagger 0.06. Spider-Man card 36.1–39.45 (stagger 0.08), END 39.45–42.4 (cover 41.0). Seat light-wave 0–8.8 s. Audio: true digital silence 31.875–32.0 in FULL and SFX (hiss removed); section targets re-based so race/break sit below the drop. Covers: label kept inside the 3:4 crop. Timeline rows above for 36–42 s and card 1 date are superseded by this section and the facts table.
+
+## v2 (user feedback: the seat/cinema metaphor was unclear, effects stacked)
+Central element replaced by four columns of light to exact scale (1 unit = 100M views): GTA VI T1 (YouTube) 90.4M, GTA VI T2 475M, Deadpool 365M, Spider-Man 718.6M; name + value attached above each top; dashed lines at the two records. Hook = T2 alone at 475M; it rewinds (flashback) and the story rebuilds column by column. Effects cut to 5: DOF, gentle bloom, 16-sample motion blur, payoff shake, grain. Removed: screen/palms, seats, city, glass panel, shockwave, anamorphic streaks, lens dirt, dust. Rewind labels frozen at true values (no invented intermediate numbers).
