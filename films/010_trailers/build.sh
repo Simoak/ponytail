@@ -2,8 +2,7 @@
 # Reproducible build: lossless segments -> join -> one final encode (grain once) + covers.
 set -e; cd "$(dirname "$0")"
 python3 audio.py
-ls -d seg >/dev/null; rm -f seg/*.mkv
-seq 0 8 | xargs -P 4 -I{} python3 render.py seg {}
+ls -d seg >/dev/null; if [ "$1" != encode ]; then rm -f seg/*.mkv; seq 0 8 | xargs -P 4 -I{} python3 render.py seg {}; fi
 for i in $(seq -f "%02g" 0 8); do echo "file 'seg$i.mkv'"; done > seg/list.txt
 ffmpeg -y -loglevel error -f concat -safe 0 -i seg/list.txt -c copy master_lossless.mkv
 for A in full sfx; do

@@ -325,7 +325,8 @@ if __name__ == '__main__':
     for _ in range(4):
         full *= 10 ** ((-14 - lufs(limit(full, -3.6))) / 20)
     full = limit(full, -3.6)
-    sfx_only = mono_lows(eq_phone(S)); sfx_only *= 10 ** ((-18 - lufs(sfx_only)) / 20); sfx_only = limit(sfx_only, -3.6)
+    sfx_only = mono_lows(eq_phone(S)); sfx_only *= 10 ** ((-21 - lufs(sfx_only)) / 20); sfx_only = limit(sfx_only, -3.6)
+    # shortcut: ungated meter reads sparse SFX ~3 dB low vs BS.1770 gating; -21 here = -18 LUFS on ebur128. Add gating if reused
     write(os.path.join(HERE, 'audio', 'full.wav'), full); write(os.path.join(HERE, 'audio', 'sfx.wav'), sfx_only)
     ph = np.stack([bp(full[:, c], 280, 9000, 4) for c in range(2)], 1)
     print('FULL lufs %.2f tp %.2f | SFX lufs %.2f tp %.2f | phone delta %.1f dB' % (lufs(full), tp_db(full), lufs(sfx_only), tp_db(sfx_only), lufs(full) - lufs(ph)))

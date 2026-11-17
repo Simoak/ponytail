@@ -110,7 +110,7 @@ def fill(t):
 def walls(t): return 1 - 0.85 * smooth(seg(t, 24.3, 26.0)) + 0.85 * smooth(seg(t, 42.5, 43.8)) * (t >= 42.5)
 def dip(t, a, b, depth=0.85):  # projector restart: down then up
     k = seg(t, a, b); return depth * np.sin(np.pi * k) ** 2 if 0 < k < 1 else 0.0
-def screen_on(t): return 1 - dip(t, 3.85, 4.45) - dip(t, 16.0, 17.2, 0.95)
+def screen_on(t): return 1 - dip(t, 3.85, 4.45) - dip(t, 16.0, 17.2, 0.95) - dip(t, 42.5, 43.3, 0.9)  # last dip swaps back to Trailer 1 for the loop
 def ring_draw(t, a, b): return smooth(seg(t, a, b)) * (1 - smooth(seg(t, 42.5, 43.3)))
 def dim(t): return 1 - 0.5 * smooth(seg(t, 32.3, 33.0)) + 0.5 * smooth(seg(t, 42.4, 43.0)) * (t >= 42.4)
 
@@ -194,7 +194,7 @@ def scene_points(t):
     front = np.exp(-((v - thrS) / 4.0) ** 2) * (v > 0.5) * (v < 474)
     base = 0.05 + 0.10 * hsh(np.arange(NS) + 3) + 0.10 * np.exp(-dS / 1.6)  # screen spill
     tw = np.zeros(NS); tw[TW] = 0.9 * np.maximum(0, np.cos(TAU * TWK * t / T + TWP)) ** 30
-    wave = np.exp(-((dS - 1.25 - 2.0 * ((t / 1.0) % 1)) / 0.12) ** 2) * (clamp(1 - seg(t, 3.0, 3.8)) + clamp(seg(t, 42.8, 43.6)))  # seat light wave each beat-pair in the hook
+    wave = np.sin(np.pi * ((t / 1.0) % 1)) ** 2 * np.exp(-((dS - 1.25 - 2.0 * ((t / 1.0) % 1)) / 0.12) ** 2) * (clamp(1 - seg(t, 3.0, 3.8)) + clamp(seg(t, 42.8, 43.6)))  # seat light wave each beat-pair in the hook
     bS = base * (0.6 + 0.4 * son) + 2.0 * lit + 1.2 * front + tw + 0.5 * wave
     # city
     litc = np.clip((v - thrC) / 6.0 + 0.5, 0, 1) if v > 120 else np.zeros(NC)
@@ -238,7 +238,7 @@ TEX = cv2.GaussianBlur(TEX, (0, 0), 1.2)
 SCRL = [None]
 def scr_layer(t, pos, tgt, mm, A, zf, wscale, shake):
     son = screen_on(t); idle = 0.30 + 0.04 * np.cos(TAU * 22 * t / T)
-    trailer2 = t >= 16.5
+    trailer2 = 16.5 <= t < 42.9
     tex = TEX[:, ::-1] if trailer2 else TEX
     shift = int(12 * np.sin(TAU * 4 * t / T))
     tex = np.roll(tex, shift, 1) * (0.92 + 0.08 * np.cos(TAU * 88 * t / T))
