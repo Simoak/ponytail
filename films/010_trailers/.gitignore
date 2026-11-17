@@ -1,0 +1,10 @@
+# heavy render outputs stay local
+seg/
+stills/
+qa/
+covers/
+audio/
+*.mp4
+*.mkv
+*.log
+__pycache__/
