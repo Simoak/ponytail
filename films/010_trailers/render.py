@@ -77,6 +77,32 @@ def dashed(y, x0, x1, n=420):
     return np.stack([x[keep], np.full(keep.sum(), y), np.full(keep.sum(), CW / 2 + 0.06)], 1)
 REC1 = dashed(0.904, -2.45, 2.45)   # Trailer 1's YouTube record
 REC2 = dashed(3.65, -2.45, 2.45)    # movie-trailer record of the time
+# scale: a faint line every 100M behind the chart, revealed as the story climbs
+SCALE = [dashed(k, -2.7, 2.7, 300) * np.array([1, 1, 0]) + np.array([0, 0, -0.9]) for k in range(1, 8)]
+def scale_on(k, t):
+    peak = max(height(i, t) for i in range(4))
+    return smooth((peak + 0.6 - k) / 0.5) if k <= 7 else 0
+# giant background number in the empty top band (5-25 s): Trailer 1's 90.4M, the number to beat
+def text_points(txt, n=6000):
+    F = ImageFont.truetype(FD + 'InterDisplay-Bold.otf', 300); w = int(F.getlength(txt)) + 20
+    im = Image.new('L', (w, 380), 0); ImageDraw.Draw(im).text((10, 10), txt, font=F, fill=255)
+    ys, xs = np.nonzero(np.asarray(im) > 128); r = np.random.default_rng(7)
+    idx = r.choice(len(xs), n, replace=len(xs) < n); xs, ys = xs[idx] + r.random(n), ys[idx] + r.random(n)
+    sc = 860 / w  # fills the text column width
+    return np.stack([540 + (xs - w / 2) * sc, 375 + (ys - (ys.min() + ys.max()) / 2) * sc], 1)
+BIGP = text_points('90.4M'); _r = np.random.default_rng(9)
+BIG0 = np.stack([_r.uniform(-200, 1280, len(BIGP)), _r.uniform(-300, 1100, len(BIGP))], 1)   # scattered start
+BIGUP = BIGP + np.stack([_r.normal(0, 120, len(BIGP)), -_r.uniform(250, 700, len(BIGP))], 1)  # scatter upward
+BIGPH = _r.uniform(0, TAU, len(BIGP))
+def big_number(t):
+    """screen-space particles: gather 4.6-5.8, hold, pulse when T2 falls short (20.2), scatter up 24.3-25.6"""
+    if not 4.6 <= t < 25.6: return None
+    g, u = smooth(seg(t, 4.6, 5.8)), smooth(seg(t, 24.3, 25.6))
+    P = BIG0 * (1 - g) + BIGP * g; P = P * (1 - u) + BIGUP * u
+    P = P + np.array([3 * np.sin(TAU * 2 * t / T), 2 * np.cos(TAU * 3 * t / T)])  # micro-drift on the hold
+    b = 0.11 * (0.4 + 0.6 * g) * (1 - u) * (1 + 0.2 * np.cos(TAU * 22 * t / T + BIGPH))
+    b = b * (1 + 0.5 * np.exp(-((t - 20.35) / 0.18) ** 2))
+    return P, b
 def line_draw(t, a, b): return smooth(seg(t, a, b)) * (1 - smooth(seg(t, 42.5, 43.3)))
 
 # ---------------------------------------------------------------- camera
@@ -151,6 +177,9 @@ def scene_points(t):
         out.append((cap, np.full(len(cap), 1.3)))
         refl = p * np.array([1, -1, 1]); out.append((refl, b * 0.10 * np.exp(-p[:, 1] / 0.35), 'soft'))  # floor reflection
     out.append((FL, FLB))
+    for k, L in enumerate(SCALE, 1):
+        a = scale_on(k, t)
+        if a > 0.01: out.append((L, np.full(len(L), 0.16 * a)))
     out.append((BASE, np.full(len(BASE), 0.22)))
     for L, a, b in ((REC1, 12.3, 13.3), (REC2, 29.4, 30.2)):
         k = line_draw(t, a, b)
@@ -276,6 +305,17 @@ def chart_labels(t):
             res.append((a, x, y, c, on))
     return res
 
+def scale_labels(t):
+    pos, tgt, mm, _, _ = camera(t); res = []
+    for k in range(1, 8):
+        a = scale_on(k, t)
+        if a <= 0.01: continue
+        (x,), (y,), (z,) = project(np.array([[-2.7, k, -0.9]]), pos, tgt, mm)
+        if z <= 0 or not (300 < y < 1080): continue
+        img, adv = word_img(f'{k}00M', 'Inter-Medium.otf', 28, 0.02)
+        res.append((img, max(x - adv - 16, 80), y - 20, SEC, 0.75 * a))
+    return res
+
 def text_items(t):
     out = [(word_img('ARCHIVE #010 · GTA VI · PART 4', 'Inter-Medium.otf', 30, 0.08)[0], TX, 200, SEC, 1.0)]
     hk, _ = block(HOOK, TX, BAND_Y)
@@ -293,7 +333,7 @@ def text_items(t):
         its, _ = block(IDEA, TX, BAND_Y); out += reveal(its, t, 36.1, 0.08, 39.15, 0.3)
     if 39.45 <= t < 42.45:
         its, _ = block(END, TX, BAND_Y - 20, gap=12); out += reveal(its, t, 39.45, 0.10, 42.0, 0.4)
-    return out + chart_labels(t)
+    return out + scale_labels(t) + chart_labels(t)
 
 def compose_text(img, t):
     for a, x, y, col, al in text_items(t):
@@ -314,6 +354,8 @@ def render(t):
         for i in range(16): accumulate(t + (i / 15 - 0.5) / 120.0, groups, 1 / 16, sh)  # 16 samples, 180° shutter
     else:
         accumulate(t, groups, 1.0, sh)
+    bn = big_number(t)
+    if bn is not None: groups.append((bn[0][:, 0], bn[0][:, 1], 3.0 * bn[1], np.full(len(bn[1]), 3.2)))
     lv = new_bufs(); splat(lv, *[np.concatenate([g[i] for g in groups]) for i in range(4)])
     img = compose_text(post(lv, t), t)
     rgb = np.clip(img * 255 + DITHER[int(round(t * FPS)) % 4], 0, 255).astype(np.uint8)
